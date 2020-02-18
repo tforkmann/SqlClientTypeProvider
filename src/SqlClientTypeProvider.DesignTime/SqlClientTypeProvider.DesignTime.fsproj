@@ -11,10 +11,22 @@
       <Paket>True</Paket>
       <Link>paket-files/ProvidedTypes.fs</Link>
     </Compile>
+    <Compile Include="..\..\paket-files\sourcefiles\Thorium\Linq.Expression.Optimizer\src\Code\ExpressionOptimizer.fs">
+      <Link>ExpressionOptimizer.fs</Link>
+    </Compile>
     <Compile Include="Operators.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="SqlSchema.fs" />
     <Compile Include="DataTable.fs" />
+    <Compile Include="Transactions.fs" />
+    <Compile Include="Commons.fs" />
+    <Compile Include="Providers.fs" />
+    <Compile Include="DataContext.fs" />
+    <Compile Include="Patterns.fs" />
+    <Compile Include="QueryExpressions.fs" />
+    <Compile Include="Linq.fs" />
+    <Compile Include="QuotationHelpers.fs" />
+    <Compile Include="SqlDesignTime.fs" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

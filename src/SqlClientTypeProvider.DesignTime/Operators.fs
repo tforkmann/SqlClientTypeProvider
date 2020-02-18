@@ -1,4 +1,4 @@
-﻿namespace SqlClientTypeProvider.DesignTime
+﻿namespace SqlClientTypeProvider.Operators
 
 open System.Linq
 

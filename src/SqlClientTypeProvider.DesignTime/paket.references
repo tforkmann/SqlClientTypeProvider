@@ -3,3 +3,4 @@ File:ProvidedTypes.fs
 
 FSharp.Core
 System.Configuration.ConfigurationManager
+Microsoft.Data.SqlClient
