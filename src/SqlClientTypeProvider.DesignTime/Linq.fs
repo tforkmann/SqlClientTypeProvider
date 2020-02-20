@@ -1,4 +1,4 @@
-namespace SqlClientTypeProvider.Runtime
+namespace SqlClientTypeProvider
 
 open System
 open System.Collections
@@ -730,7 +730,7 @@ module internal QueryImplementation =
              { new Linq.IQueryProvider with
                 member __.CreateQuery(e:Expression) : IQueryable = failwithf "CreateQuery, e = %A" e
                 member __.CreateQuery<'T>(e:Expression) : IQueryable<'T> =
-                    Common.QueryEvents.PublishExpression e
+                    Common.QueryEvents.publishExpression e
                     match e with
                     | MethodCall(None, (MethodWithName "Skip" as meth), [SourceWithQueryData source; Int amount]) ->
                         let ty = typedefof<SqlQueryable<_>>.MakeGenericType(meth.GetGenericArguments().[0])
@@ -747,7 +747,7 @@ module internal QueryImplementation =
                              | "" -> ""
                              | _ -> Utilities.resolveTuplePropertyName entity source.TupleIndex
                         let ascending = meth.Name = "OrderBy"
-                        let gb = source.SqlExpression.hasGroupBy()
+                        let gb = source.SqlExpression.HasGroupBy()
                         let sqlExpression =
                                match source.SqlExpression, gb, key with
                                | BaseTable("",entity),_,_ -> OrderBy("",key,ascending,BaseTable(alias,entity))
@@ -769,7 +769,7 @@ module internal QueryImplementation =
                         let ascending = meth.Name = "ThenBy"
                         match source.SqlExpression with
                         | OrderBy(_) ->
-                            let gb = source.SqlExpression.hasGroupBy()
+                            let gb = source.SqlExpression.HasGroupBy()
                             let sqlExpression =
                                match gb, key with
                                | Some gbv, GroupColumn(KeyOp(""), _) ->
@@ -953,7 +953,7 @@ module internal QueryImplementation =
                     failwith "Execute not implemented"
 
                 member __.Execute<'T>(e: Expression) : 'T =
-                    Common.QueryEvents.PublishExpression e
+                    Common.QueryEvents.publishExpression e
                     match e with
                     | MethodCall(_, (MethodWithName "First"), [Constant(query, _)]) ->
                         let svc = (query :?> IWithSqlService)

@@ -8,6 +8,7 @@ open System.Collections.Generic
 open SqlClientTypeProvider.Common
 open SqlClientTypeProvider.Patterns
 open SqlClientTypeProvider.Schema
+open SqlClientTypeProvider.Operators
 
 module internal QueryExpressionTransformer =
     open SqlClientTypeProvider
@@ -289,7 +290,7 @@ module internal QueryExpressionTransformer =
         // this is not tail recursive but it shouldn't matter in practice ....
         let rec transform  (en:String option) (e:Expression): Expression =
             let e = ExpressionOptimizer.doReduction e
-            if e = null then null else
+            if isNull e then null else
             match e.NodeType, e with
             | OperationItem me -> upcast me
             | ProjectionItem me -> upcast me
@@ -416,7 +417,7 @@ module internal QueryExpressionTransformer =
 
         let entityIndex = new ResizeArray<_>(entityIndex |> Seq.map (legaliseName))
 
-        let sqlQuery = SqlQuery.ofSqlExp(exp,entityIndex)
+        let sqlQuery = SqlQuery.OfSqlExp(exp,entityIndex)
         let groupgin = new ResizeArray<_>()
 
          // note : the baseAlias here will always be "" when no criteria has been applied, because the LINQ tree never needed to refer to it
@@ -518,7 +519,7 @@ module internal QueryExpressionTransformer =
                         | ExpressionType.Quote, (:? UnaryExpression as ce) ->  
                             generateReplacementParams ce.Operand
                         | ExpressionType.Call, (:? MethodCallExpression as me) ->  
-                            me.Arguments |> Seq.iter(fun a -> generateReplacementParams a)
+                            me.Arguments |> Seq.iter generateReplacementParams
                         | _ -> ()
 
                     generateReplacementParams(currentProj)
@@ -539,7 +540,7 @@ module internal QueryExpressionTransformer =
                                 // Should gather the column names what we want to aggregate, not just operations.
                                 let aggregations:(alias * SqlColumnType) list =
                                     List.concat [ x; (groupProjectionMap |> Seq.toList)]
-                                    |> Seq.map(fun op ->
+                                    |> Seq.collect(fun op ->
                                         if not (group |> List.isEmpty) then 
                                             group 
                                             |> List.choose(fun (baseal, cc) -> 
@@ -558,7 +559,7 @@ module internal QueryExpressionTransformer =
                                                 | _ -> None)
 
                                         else [op]
-                                    ) |> Seq.concat |> Seq.toList
+                                    ) |> Seq.toList
                                 group, aggregations)
                         groupgin.AddRange(gatheredAggregations)
 
@@ -574,7 +575,7 @@ module internal QueryExpressionTransformer =
                         composeProjections tail lambda1 foundparams
 
                 let generatedMegaLambda, finalParams = composeProjections projs (Unchecked.defaultof<LambdaExpression>) (Dictionary<string, ResizeArray<ProjectionParameter>>())
-                QueryEvents.PublishExpression generatedMegaLambda
+                QueryEvents.publishExpression generatedMegaLambda
                 (generatedMegaLambda.Compile(),finalParams)
 
         let sqlQuery = 

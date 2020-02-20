@@ -4,12 +4,9 @@
     <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
   </PropertyGroup>
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Patterns.fs" />
-    <Compile Include="QueryExpressions.fs" />
-    <!-- <Compile Include="SqlClientTypeProvider.Runtime.fs" /> -->
+    <Compile Include="SqlClientTypeProvider.Runtime.fs" />
     <None Include="paket.references" />
     <None Include="paket.template" />
   </ItemGroup>

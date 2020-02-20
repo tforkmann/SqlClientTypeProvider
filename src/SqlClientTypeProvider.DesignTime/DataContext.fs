@@ -9,7 +9,7 @@ open SqlClientTypeProvider
 open SqlClientTypeProvider.Common
 open SqlClientTypeProvider.Schema
 open SqlClientTypeProvider.Operators 
-open System.Collections.Concurrent
+open System.Collections.Concurrent 
 
 module internal ProviderBuilder = 
     open SqlClientTypeProvider.Providers
@@ -140,7 +140,7 @@ type public SqlDataContext (typeName, connectionString:string, providerType, res
                             entity.SetColumnSilent(name, data)
                     entity |> box
 
-            if (provider.GetType() <> typeof<Providers.MSAccessProvider>) then con.Close()
+            con.Close()
             entities
 
         member this.CallSprocAsync(def:RunTimeSprocDefinition, retCols:QueryParameter[], values:obj array) =
@@ -171,10 +171,10 @@ type public SqlDataContext (typeName, connectionString:string, providerType, res
                                     let data = toEntityArray rs
                                     entity.SetColumnSilent(name, data)
 
-                            if (provider.GetType() <> typeof<Providers.MSAccessProvider>) then con.Close()
+                            con.Close()
                             entity
                     | Choice2Of2 err ->
-                        if (provider.GetType() <> typeof<Providers.MSAccessProvider>) then con.Close()
+                        con.Close()
                         raise err
 
                 return entities
@@ -201,11 +201,11 @@ type public SqlDataContext (typeName, connectionString:string, providerType, res
             if con.State <> ConnectionState.Open then con.Open()
             use reader = com.ExecuteReader()
             let entity = (this :> ISqlDataContext).ReadEntities(table.FullName, columns, reader) |> Seq.exactlyOne
-            if (provider.GetType() <> typeof<Providers.MSAccessProvider>) then con.Close()
+            con.Close()
             entity
 
         member this.ReadEntities(name: string, columns: ColumnLookup, reader: IDataReader) =
-            [| while reader.Read() = true do
+            [| while reader.Read() do
                  let e = SqlEntity(this, name, columns)
                  for i = 0 to reader.FieldCount - 1 do
                     match reader.GetValue(i) with

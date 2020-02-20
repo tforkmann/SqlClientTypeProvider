@@ -1,7 +1,6 @@
 namespace SqlClientTypeProvider.Common
     
 open System
-open System.Collections.Generic
 open System.Configuration
 module StandardExtensions =
     type System.Data.DataTable with
@@ -14,7 +13,7 @@ module internal Utilities =
     
     open System.IO
     open System.Collections.Concurrent 
-    open SqlClientTypeProvider.DesignTime
+    open SqlClientTypeProvider.Operators
     type TempFile(path:string) =
          member val Path = path with get
          interface IDisposable with 
@@ -76,29 +75,29 @@ module internal Utilities =
 
     let rec convertTypes (itm:obj) (returnType:Type) =
         if (returnType.Name.StartsWith("Option") || returnType.Name.StartsWith("FSharpOption")) && returnType.GenericTypeArguments.Length = 1 then
-            if itm = null then None |> box
+            if isNull itm then None |> box
             else
             match convertTypes itm (returnType.GenericTypeArguments.[0]) with
-            | :? String as t -> Option.Some t |> box
-            | :? Int32 as t -> Option.Some t |> box
-            | :? Decimal as t -> Option.Some t |> box
-            | :? Int64 as t -> Option.Some t |> box
-            | :? Single as t -> Option.Some t |> box
-            | :? UInt32 as t -> Option.Some t |> box
-            | :? Double as t -> Option.Some t |> box
-            | :? UInt64 as t -> Option.Some t |> box
-            | :? Int16 as t -> Option.Some t |> box
-            | :? UInt16 as t -> Option.Some t |> box
-            | :? DateTime as t -> Option.Some t |> box
-            | :? Boolean as t -> Option.Some t |> box
-            | :? Byte as t -> Option.Some t |> box
-            | :? SByte as t -> Option.Some t |> box
-            | :? Char as t -> Option.Some t |> box
-            | :? DateTimeOffset as t -> Option.Some t |> box
-            | :? TimeSpan as t -> Option.Some t |> box
-            | t -> Option.Some t |> box
+            | :? String as t -> Some t |> box
+            | :? Int32 as t -> Some t |> box
+            | :? Decimal as t -> Some t |> box
+            | :? Int64 as t -> Some t |> box
+            | :? Single as t -> Some t |> box
+            | :? UInt32 as t -> Some t |> box
+            | :? Double as t -> Some t |> box
+            | :? UInt64 as t -> Some t |> box
+            | :? Int16 as t -> Some t |> box
+            | :? UInt16 as t -> Some t |> box
+            | :? DateTime as t -> Some t |> box
+            | :? Boolean as t -> Some t |> box
+            | :? Byte as t -> Some t |> box
+            | :? SByte as t -> Some t |> box
+            | :? Char as t -> Some t |> box
+            | :? DateTimeOffset as t -> Some t |> box
+            | :? TimeSpan as t -> Some t |> box
+            | t -> Some t |> box
         elif returnType.Name.StartsWith("Nullable") && returnType.GenericTypeArguments.Length = 1 then
-            if itm = null then null |> box
+            if isNull itm  then null |> box
             else convertTypes itm (returnType.GenericTypeArguments.[0])
         else
         match itm, returnType with
@@ -237,7 +236,7 @@ module ConfigHelpers =
                 | Some(configFilePath) ->
                     use tempFile = Utilities.tempFile "config"
                     File.Copy(configFilePath, tempFile.Path)
-                    let fileMap = new ExeConfigurationFileMap(ExeConfigFilename = tempFile.Path)
+                    let fileMap = ExeConfigurationFileMap(ExeConfigFilename = tempFile.Path)
                     let config = ConfigurationManager.OpenMappedExeConfiguration(fileMap, ConfigurationUserLevel.None)
                     match config.ConnectionStrings.ConnectionStrings.[connectionStringName] with
                     | null -> ""
@@ -354,7 +353,7 @@ module internal Reflection =
     let tryLoadAssembly path = 
          try 
              let loadedAsm = Assembly.LoadFrom(path) 
-             if loadedAsm <> null
+             if not(isNull loadedAsm)
              then Some(Choice1Of2 loadedAsm)
              else None
          with e ->
@@ -378,8 +377,8 @@ module internal Reflection =
                 else Path.Combine(resolutionPath,asm))
 
         let ifNotNull (x:Assembly) =
-            if x = null then ""
-            elif x.Location = null then ""
+            if isNull x then ""
+            elif isNull x.Location then ""
             else x.Location |> Path.GetDirectoryName
 
 //#if NETSTANDARD
@@ -438,7 +437,7 @@ module internal Reflection =
                         let assemblyPath = Path.Combine(dllPath,fileName)
                         if File.Exists assemblyPath then
                             let tryLoad = loadFunc assemblyPath true
-                            if tryLoad <> null then 
+                            if not(isNull tryLoad) then 
                                 Some(tryLoad) else None
                         else None)
                 match loaded with
@@ -449,7 +448,7 @@ module internal Reflection =
         handler <- // try to avoid StackOverflowException of Assembly.LoadFrom calling handler again
             System.ResolveEventHandler (fun _ args ->
                 let loadfunc x shouldCatch =
-                    if handler <> null then AppDomain.CurrentDomain.remove_AssemblyResolve handler
+                    if not(isNull handler) then AppDomain.CurrentDomain.remove_AssemblyResolve handler
                     let res = 
                         try 
                             //File.AppendAllText(@"c:\Temp\build.txt", "Binding trial " + args.Name + " to " + x + "\r\n")
@@ -459,7 +458,7 @@ module internal Reflection =
                             r
                         with e when shouldCatch -> 
                             null
-                    if handler <> null then AppDomain.CurrentDomain.add_AssemblyResolve handler
+                    if not(isNull handler) then AppDomain.CurrentDomain.add_AssemblyResolve handler
                     res
                 loadHandler args loadfunc)
         System.AppDomain.CurrentDomain.add_AssemblyResolve handler

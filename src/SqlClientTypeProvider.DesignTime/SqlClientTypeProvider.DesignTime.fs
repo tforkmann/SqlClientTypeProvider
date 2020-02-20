@@ -10,8 +10,8 @@ open SqlClientTypeProvider.Schema
 open SqlClientTypeProvider.Runtime
 open SqlClientTypeProvider.Common
 open SqlClientTypeProvider.Operators 
-open ProviderImplementation.ProvidedTypes 
-
+open ProviderImplementation.ProvidedTypes  
+ 
 type internal SqlRuntimeInfo (config : TypeProviderConfig) =
     let runtimeAssembly =
         Assembly.GetExecutingAssembly()
@@ -28,7 +28,7 @@ type internal ParameterValue =
   | UserProvided of string * string * Type
   | Default of Expr
 
-[<TypeProvider>]
+[<TypeProvider>] 
 type SqlTypeProvider(config: TypeProviderConfig) as this =
     inherit TypeProviderForNamespaces(config)
     let sqlRuntimeInfo = SqlRuntimeInfo(config)

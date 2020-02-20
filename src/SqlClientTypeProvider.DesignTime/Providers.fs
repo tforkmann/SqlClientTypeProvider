@@ -778,15 +778,15 @@ type internal MSSqlServerProvider(contextSchemaPath, tableNames:string) =
                                     let operatorIn operator (array : IDbDataParameter[]) =
                                         if Array.isEmpty array then
                                             match operator with
-                                            | FSharp.Data.Sql.In -> "1=0" // nothing is in the empty set
-                                            | FSharp.Data.Sql.NotIn -> "1=1" // anything is not in the empty set
+                                            | In -> "1=0" // nothing is in the empty set
+                                            | NotIn -> "1=1" // anything is not in the empty set
                                             | _ -> failwith "Should not be called with any other operator"
                                         else
                                             let text = String.Join(",", array |> Array.map (fun p -> p.ParameterName))
                                             Array.iter parameters.Add array
                                             match operator with
-                                            | FSharp.Data.Sql.In -> sprintf "%s IN (%s)" column text
-                                            | FSharp.Data.Sql.NotIn -> sprintf "%s NOT IN (%s)" column text
+                                            | In -> sprintf "%s IN (%s)" column text
+                                            | NotIn -> sprintf "%s NOT IN (%s)" column text
                                             | _ -> failwith "Should not be called with any other operator"
 
                                     let prefix = if i>0 then (sprintf " %s " op) else ""
@@ -796,22 +796,22 @@ type internal MSSqlServerProvider(contextSchemaPath, tableNames:string) =
                                         let innersql, innerpars = data.Value |> box :?> string * IDbDataParameter[]
                                         Array.iter parameters.Add innerpars
                                         match operator with
-                                        | FSharp.Data.Sql.NestedExists -> sprintf "EXISTS (%s)" innersql
-                                        | FSharp.Data.Sql.NestedNotExists -> sprintf "NOT EXISTS (%s)" innersql
-                                        | FSharp.Data.Sql.NestedIn -> sprintf "%s IN (%s)" column innersql
-                                        | FSharp.Data.Sql.NestedNotIn -> sprintf "%s NOT IN (%s)" column innersql
+                                        | NestedExists -> sprintf "EXISTS (%s)" innersql
+                                        | NestedNotExists -> sprintf "NOT EXISTS (%s)" innersql
+                                        | NestedIn -> sprintf "%s IN (%s)" column innersql
+                                        | NestedNotIn -> sprintf "%s NOT IN (%s)" column innersql
                                         | _ -> failwith "Should not be called with any other operator"
 
                                     ~~(sprintf "%s%s" prefix <|
                                         match operator with
-                                        | FSharp.Data.Sql.IsNull -> sprintf "%s IS NULL" column
-                                        | FSharp.Data.Sql.NotNull -> sprintf "%s IS NOT NULL" column
-                                        | FSharp.Data.Sql.In 
-                                        | FSharp.Data.Sql.NotIn -> operatorIn operator paras
-                                        | FSharp.Data.Sql.NestedExists 
-                                        | FSharp.Data.Sql.NestedNotExists 
-                                        | FSharp.Data.Sql.NestedIn 
-                                        | FSharp.Data.Sql.NestedNotIn -> operatorInQuery operator paras
+                                        | IsNull -> sprintf "%s IS NULL" column
+                                        | NotNull -> sprintf "%s IS NOT NULL" column
+                                        | In 
+                                        | NotIn -> operatorIn operator paras
+                                        | NestedExists 
+                                        | NestedNotExists 
+                                        | NestedIn 
+                                        | NestedNotIn -> operatorInQuery operator paras
                                         | _ ->
                                             let aliasformat = sprintf "%s %s %s" column
                                             match data with 
@@ -825,10 +825,10 @@ type internal MSSqlServerProvider(contextSchemaPath, tableNames:string) =
                             ))
                             // there's probably a nicer way to do this
                             let rec aux = function
-                                | x::[] when preds.Length > 0 ->
+                                | [x] when preds.Length > 0 ->
                                     ~~ (sprintf " %s " op)
                                     filterBuilder' [x]
-                                | x::[] -> filterBuilder' [x]
+                                | [x] -> filterBuilder' [x]
                                 | x::xs when preds.Length > 0 ->
                                     ~~ (sprintf " %s " op)
                                     filterBuilder' [x]
@@ -891,11 +891,11 @@ type internal MSSqlServerProvider(contextSchemaPath, tableNames:string) =
             let columns =
                 let extracolumns =
                     match sqlQuery.Grouping with
-                    | [] -> FSharp.Data.Sql.Common.Utilities.parseAggregates fieldNotation fieldNotationAlias sqlQuery.AggregateOp
+                    | [] -> Utilities.parseAggregates fieldNotation fieldNotationAlias sqlQuery.AggregateOp
                     | g  -> 
                         let keys = g |> List.map(fst) |> List.concat |> List.map(fun (a,c) -> (fieldNotation a c))
                         let aggs = g |> List.map(snd) |> List.concat
-                        let res2 = FSharp.Data.Sql.Common.Utilities.parseAggregates fieldNotation fieldNotationAlias aggs |> List.toSeq
+                        let res2 = Utilities.parseAggregates fieldNotation fieldNotationAlias aggs |> List.toSeq
                         [String.Join(", ", keys) + (if List.isEmpty aggs || List.isEmpty keys then ""  else ", ") + String.Join(", ", res2)] 
                 match extracolumns with
                 | [] -> selectcolumns
