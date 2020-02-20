@@ -15,10 +15,6 @@ open ProviderImplementation.ProvidedTypes
 type internal SqlRuntimeInfo (config : TypeProviderConfig) =
     let runtimeAssembly =
         Assembly.GetExecutingAssembly()
-        //let r = Reflection.tryLoadAssemblyFrom "" [||] [config.RuntimeAssembly]
-        //match r with
-        //| Choice1Of2(assembly) -> assembly
-        //| Choice2Of2(paths, errors) -> Assembly.GetExecutingAssembly()
     member __.RuntimeAssembly = runtimeAssembly
 
 module internal DesignTimeCache =
@@ -30,7 +26,7 @@ type internal ParameterValue =
 
 [<TypeProvider>] 
 type SqlTypeProvider(config: TypeProviderConfig) as this =
-    inherit TypeProviderForNamespaces(config)
+    inherit TypeProviderForNamespaces(config, assemblyReplacementMap=[("SqlClientTypeProvider.DesignTime", "SqlClientTypeProvider.Runtime")], addDefaultProbingLocation=true)
     let sqlRuntimeInfo = SqlRuntimeInfo(config)
     let mySaveLock = Object()
 
@@ -975,5 +971,5 @@ type SqlTypeProvider(config: TypeProviderConfig) as this =
     // add them to the namespace
     do this.AddNamespace(SqlClientTypeProvider, [paramSqlType])
 
-[<assembly:TypeProviderAssembly>]
+[<TypeProviderAssembly>]
 do()
