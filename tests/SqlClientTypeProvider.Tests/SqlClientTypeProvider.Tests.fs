@@ -17,6 +17,6 @@ let main argv =
             select emp.FirstName
         } |> Seq.head
 
-    printfn "Hello %s!" employeesFirstName
+    printfn "Hello %s!" employeesFirstName   
     System.Threading.Thread.Sleep 2000
-    0 // return an integer exit code 
+    0 // return an integer exit code   

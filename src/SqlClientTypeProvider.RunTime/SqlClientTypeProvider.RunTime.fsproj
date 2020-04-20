@@ -17,15 +17,5 @@
     <Compile Include="SqlClientTypeProvider.Runtime.fs" />    
     <None Include="paket.references" />
   </ItemGroup>
-  <Target Name="BeforeBuild">
-    <MSBuild Projects="..\SqlClientTypeProvider.DesignTime\SqlClientTypeProvider.DesignTime.fsproj" Targets="Restore" />
-    <MSBuild Projects="..\SqlClientTypeProvider.DesignTime\SqlClientTypeProvider.DesignTime.fsproj" Targets="Build" Properties="Configuration=$(Configuration);TargetFramework=netcoreapp3.1" />
-  </Target>
-  <Target Name="AfterBuild">
-    <CreateItem Include="..\SqlClientTypeProvider.DesignTime\bin\$(Configuration)\netcoreapp3.1\*.dll;..\SqlClientTypeProvider.DesignTime\bin\$(Configuration)\netcoreapp3.1\*.pdb">
-      <Output TaskParameter="Include" ItemName="DesignTimeBinaries1" />
-    </CreateItem>
-    <Copy SourceFiles="@(DesignTimeBinaries1)" DestinationFolder="$(OutputPath)/../typeproviders/fsharp41/netcoreapp3.1" />
-  </Target>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

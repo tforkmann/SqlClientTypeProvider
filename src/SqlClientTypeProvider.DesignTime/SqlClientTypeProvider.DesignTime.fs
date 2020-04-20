@@ -18,7 +18,7 @@ type internal SqlRuntimeInfo (config : TypeProviderConfig) =
     member __.RuntimeAssembly = runtimeAssembly
 
 module internal DesignTimeCache =
-    let cache = System.Collections.Concurrent.ConcurrentDictionary<_,ProvidedTypeDefinition>()
+    let cache = Collections.Concurrent.ConcurrentDictionary<_,ProvidedTypeDefinition>()
 
 type internal ParameterValue =
   | UserProvided of string * string * Type

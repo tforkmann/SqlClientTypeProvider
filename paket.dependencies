@@ -15,7 +15,7 @@ github fsprojects/FSharp.TypeProviders.SDK src/ProvidedTypes.fs
 
 group Test
   source https://api.nuget.org/v3/index.json
-  frameworks: netcoreapp3.1
+  framework: netcoreapp3.1
 
   nuget FSharp.Core
   nuget Microsoft.NET.Test.Sdk
